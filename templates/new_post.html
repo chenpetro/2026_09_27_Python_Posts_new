@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Post</title>
+</head>
+<body>
+    <h1>New Post</h1>
+    <form action="/new_post" method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp" required>
+        <textarea name="description" placeholder="Description" maxlength="500"></textarea>
+        <button type="submit">Create Post</button>
+    </form>
+    <a href="/posts">Back to posts</a>
+</body>
+</html>

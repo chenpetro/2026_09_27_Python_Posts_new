@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Posts</title>
+</head>
+<body>
+	<header>
+		<h1>Posts</h1>
+		<a href="/new_post">Create post</a>
+	</header>
+	<main>
+		{% for post in posts %}
+			<article>
+				<p>Posted by <strong>{{ post.author.username }}</strong></p>
+				<img src="{{ url_for('uploaded_file', filename=post.image_path) }}" alt="{{ post.description or 'Post image' }}" width="400">
+				{% if post.description %}<p>{{ post.description }}</p>{% endif %}
+			</article>
+		{% else %}
+			<p>No posts yet.</p>
+		{% endfor %}
+	</main>
+</body>
+</html>
