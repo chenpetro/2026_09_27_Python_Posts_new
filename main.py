@@ -1,3 +1,8 @@
+from datetime import timedelta
+
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, redirect, render_template, request, send_from_directory
 import os
 from uuid import uuid4
@@ -6,11 +11,34 @@ from flask_login import (UserMixin, LoginManager, login_user, logout_user, login
 from sqlalchemy.orm import selectinload
 from werkzeug.utils import secure_filename
 from database import Post, SessionLocal, User, select
-
+from flask_wtf.csrf import CSRFProtect
+import secrets
 
 app = Flask(__name__)
+
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key')
 app.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024
+app.config["MAX_FORM_MEMORY_SIZE"] = 1024 ** 2
+app.config["MAX_FORM_PARTS"] = 500
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=60 * 24)
+cerf = CSRFProtect(app)
+
+@app.after_request
+def apply_csp(response):
+    nonce = secrets.token_urlsafe(16)  # Генеруємо nonce-токен
+    csp = (
+        f"default-src 'self'; "
+        f"script-src 'self' 'nonce-{nonce}'; "
+        f"style-src 'self'; "
+        f"frame-ancestors 'none'; "
+        f"base-uri 'self'; "
+        f"form-action 'self'"
+    )
+    response.headers["Content-Security-Policy"] = csp
+    response.set_cookie('nonce', nonce)
+    return response
+
+
 FILE_PATH = os.path.join(os.getcwd(), "posts")
 ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
 os.makedirs(FILE_PATH, exist_ok=True)

@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 from sqlalchemy import func, select, Integer, String, create_engine, Boolean, ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship, sessionmaker
 from flask_login import UserMixin
@@ -6,10 +8,15 @@ from typing import List
 from flask_login import UserMixin
 import os
 
+
+engine = create_engine(os.getenv("DATABASE_URL", "DATABASE_KEY"), echo=False)
+
 PG_USER = "postgres"
 PG_PASSWORD = "Tesla31!"
-PG_DBNAME = "onlineshop"
+PG_DBNAME = "posts"
 PG_SCHEMA = "python_posts"
+
+
 engine = create_engine(
     f"postgresql+psycopg2://{PG_USER}:{PG_PASSWORD}@localhost:5432/{PG_DBNAME}",
     connect_args={"options": f"-csearch_path={PG_SCHEMA}"},
