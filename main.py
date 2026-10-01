@@ -1,9 +1,11 @@
+from flask_caching import Cache 
+
 from datetime import timedelta
 
 from dotenv import load_dotenv
 load_dotenv()
 
-from flask import Flask, redirect, render_template, request, send_from_directory
+from flask import Flask, jsonify, redirect, render_template, request, send_from_directory
 import os
 from uuid import uuid4
 from dotenv import load_dotenv
@@ -13,6 +15,9 @@ from werkzeug.utils import secure_filename
 from database import Post, SessionLocal, User, select
 from flask_wtf.csrf import CSRFProtect
 import secrets
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 
@@ -22,6 +27,10 @@ app.config["MAX_FORM_MEMORY_SIZE"] = 1024 ** 2
 app.config["MAX_FORM_PARTS"] = 500
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=60 * 24)
 cerf = CSRFProtect(app)
+cache = Cache(app)
+app.config['CACHE_DEFAULT_TIMEOUT'] = 60
+app.config['CACHE_TYPE'] = 'simple'
+app.config['CACHE_KEY_PREFIX'] = 'post_'
 
 @app.after_request
 def apply_csp(response):
@@ -58,6 +67,7 @@ def load_user(user_id):
 
 
 @app.route("/")
+@cache.cached(timeout=120) #2 min
 def main():
     user = current_user.username if current_user.is_authenticated else "Guest"
     return f"Hello {user}"
@@ -144,6 +154,29 @@ def new_post_page():
         raise
 
     return redirect('/posts')
+
+
+@app.route('/post/{int:post_id}')
+@cache.cached(timeout=30, query_string=True)
+def post_page(post_id): 
+    return  
+
+
+@app.route('/error', methods=['GET'])
+def error():
+    logging.error('Error route accessed: something went wrong')
+    return jsonify({"error": "Something went wrong"}), 500
+
+@app.route('/user', methods=['POST'])
+@cerf.exempt
+def user():
+    data = request.get_json(silent=True) or {}
+    username = data.get("username")
+    if not username:
+        logging.warning('POST /user: username is missing')
+        return jsonify({"error": "Username is required"}), 400
+    logging.info('POST /user: greeted user %s', username)
+    return jsonify({"message": f"Hello, {username}!"}), 200
 
 
 if __name__ == '__main__':

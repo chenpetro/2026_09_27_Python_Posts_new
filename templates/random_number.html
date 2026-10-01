@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Random number (cached for 20 seconds): {{ random_number }}</h1> 
+    <p>Refresh the page to see if the number changes (it will only change every 20 seconds due to caching).</p>
+    <a href="{{ url_for('index') }}">Refresh</a>
+    <p>Note: The number is cached, so it won't change until the cache expires.</p>
+    <p>Cache timeout: 20 seconds</p>
+</body>
+</html>
